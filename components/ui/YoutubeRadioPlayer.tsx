@@ -9,6 +9,7 @@ import { TrackInfo } from './TrackInfo';
 import { LoaderOverlay } from './LoaderOverlay';
 import { TransitionOverlay } from './TransitionOverlay';
 import { useCurrentTrack } from "./CurrentTrackContext";
+import { NowPlayingSection } from '../search/NowPlayingSection';
 
 export type YTPlayer = {
   playVideo: () => void;
@@ -238,7 +239,21 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
           opening={currentVideo.opening || (currentVideo.type === 'opening' && currentVideo.type_number ? `Opening ${currentVideo.type_number}` : currentVideo.type || '')}
         />
       </div>
-      
+      {/* NowPlayingSection en bas à gauche */}
+      {!isLoading && (
+        <NowPlayingSection
+          current={currentVideo}
+          all={videos}
+          onSelect={(clip) => {
+            const idx = videos.findIndex(v => v.id === clip.id);
+            if (idx !== -1 && idx !== currentVideoIndex) {
+              setCurrentVideoIndex(idx);
+              player?.loadVideoById(clip.id);
+              setIsPlaying(true);
+            }
+          }}
+        />
+      )}
     </div>
   );
 } 
