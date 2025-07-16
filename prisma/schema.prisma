@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model profile {
+  id           String   @id @default(uuid())
+  firstname    String?
+  display_name String?
+  email        String   @unique
+  bio          String?
+  links        Json?
+  created_at   DateTime @default(now())
+
+  @@map("profile")
+}
+
+model anime {
+  id            String    @id @default(uuid())
+  original_name String?
+  japanese_name String?
+  english_name  String?
+  date          DateTime?
+  videos        video[]   @relation("anime_videos")
+
+  @@map("anime")
+}
+
+model artist {
+  id     String  @id @default(uuid())
+  name   String
+  videos video[] @relation("artist_videos")
+
+  @@map("artist")
+}
+
+model video {
+  id          String   @id @default(uuid())
+  youtube_id  String
+  anime_id    String
+  artist_id   String
+  titre       String
+  type        String
+  type_number Int?
+  status      String
+  created_at  DateTime @default(now())
+
+  anime  anime  @relation("anime_videos", fields: [anime_id], references: [id])
+  artist artist @relation("artist_videos", fields: [artist_id], references: [id])
+
+  @@map("video")
+}
