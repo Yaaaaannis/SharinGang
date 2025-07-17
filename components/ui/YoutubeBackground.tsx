@@ -48,8 +48,8 @@ export const YoutubeBackground = forwardRef<YTPlayer | null, YoutubeBackgroundPr
           <div id="youtube-player" className="absolute w-full h-full"></div>
         </div>
         {/* Overlay halftone */}
-        <div className="pointer-events-none fixed inset-0 w-full h-full z-10" style={{opacity:0.03}}>
-          <img src="/halftone.gif" alt="halftone effect" className="w-full h-full object-cover" />
+        <div className="pointer-events-none fixed inset-0 w-full h-full z-10" style={{opacity:0.02}}>
+          <img src="/gif.gif" alt="halftone effect" className="w-full h-full object-cover" />
         </div>
       </div>
     );

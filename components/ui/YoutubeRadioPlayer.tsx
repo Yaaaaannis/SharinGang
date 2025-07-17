@@ -65,7 +65,7 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
   const [isVolumeControlVisible, setIsVolumeControlVisible] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   // Remplace l'initialisation de currentVideoIndex pour démarrer sur un clip random
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(() => getRandomIndex(videos.length, -1));
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   // Ajout d'un type pour supporter à la fois Clip et les objets Supabase
   type AnyVideo = Clip & {
     titre?: string;

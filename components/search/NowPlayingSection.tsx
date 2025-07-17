@@ -59,7 +59,7 @@ export function NowPlayingSection({ current, all, onSelect }: NowPlayingSectionP
               />
             </div>
             {filtered.length > 0 ? (
-              <div className="overflow-y-auto bg-[#f5ecd7]/95 flex-1">
+              <div className="overflow-y-auto bg-[#f5ecd7]/95 flex-1 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {filtered.map((clip, idx) => (
                   <div
                     key={clip.id + '-' + idx}
@@ -79,6 +79,12 @@ export function NowPlayingSection({ current, all, onSelect }: NowPlayingSectionP
                     <div className="text-xs text-gray-500 truncate italic text-center w-full">{clip.anime}</div>
                   </div>
                 ))}
+                {filtered.length === 0 && (
+                  <div className="p-4 text-center text-gray-400 italic">Aucun résultat</div>
+                )}
+                <style jsx>{`
+                  .scrollbar-none::-webkit-scrollbar { display: none; }
+                `}</style>
               </div>
             ) : (
               <div className="p-4 text-center text-gray-400 italic">Aucun résultat</div>
