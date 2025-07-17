@@ -12,22 +12,21 @@ export function NowPlayingSection({ current, all, onSelect }: NowPlayingSectionP
   const [expanded, setExpanded] = useState(false);
   const [search, setSearch] = useState('');
 
-  const normalize = (str: string) =>
-    (str || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-
-  // Filtrage clips selon la recherche (seulement sur le titre)
-  const filtered = !search.trim() ? all : all.filter(clip => {
-    const q = normalize(search);
-    return normalize(clip.title).includes(q);
-  });
+  const filtered = !search.trim()
+    ? all
+    : all.filter(clip => {
+        const q = search.trim().toLowerCase();
+        return (
+          clip.title.toLowerCase().includes(q) ||
+          clip.artist.toLowerCase().includes(q) ||
+          clip.anime.toLowerCase().includes(q) ||
+          (clip.opening && clip.opening.toLowerCase().includes(q))
+        );
+      });
 
   return (
     <div
       className={`fixed bottom-0 left-0 z-50 transition-all duration-500 flex flex-col ${expanded ? 'h-2/3 w-80' : 'h-24 w-80'} rounded-tr-2xl border-t-4 border-b-4 border-l-4 border-r-8 border-black shadow-2xl overflow-hidden bg-repeat bg-[#f5ecd7]`}
-
     >
       {/* Overlay pour refermer en cliquant à côté, seulement en expanded */}
       {expanded && (
@@ -53,9 +52,13 @@ export function NowPlayingSection({ current, all, onSelect }: NowPlayingSectionP
             </div>
             {/* SearchBar sticky sous le header */}
             <div className="sticky top-[72px] z-10 bg-[#f5ecd7]/95 px-2 pt-2 pb-1 border-b-2 border-black/10">
-              <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un clip..." />
+              <SearchBar
+                value={search}
+                onChange={setSearch}
+                placeholder="Rechercher un clip..."
+              />
             </div>
-            {filtered.length > 1 && (
+            {filtered.length > 0 ? (
               <div className="overflow-y-auto bg-[#f5ecd7]/95 flex-1">
                 {filtered.map((clip, idx) => (
                   <div
@@ -76,10 +79,9 @@ export function NowPlayingSection({ current, all, onSelect }: NowPlayingSectionP
                     <div className="text-xs text-gray-500 truncate italic text-center w-full">{clip.anime}</div>
                   </div>
                 ))}
-                {filtered.length === 0 && (
-                  <div className="p-4 text-center text-gray-400 italic">Aucun résultat</div>
-                )}
               </div>
+            ) : (
+              <div className="p-4 text-center text-gray-400 italic">Aucun résultat</div>
             )}
           </>
         ) : (
