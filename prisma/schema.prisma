@@ -13,50 +13,108 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model profile {
-  id           String   @id @default(uuid())
-  firstname    String?
-  display_name String?
-  email        String   @unique
-  bio          String?
-  links        Json?
-  created_at   DateTime @default(now())
-
-  @@map("profile")
+model animes {
+  id             Int            @id
+  title_fr       String
+  title_en       String?
+  title_original String?
+  info_url_fr    String?
+  info_url_en    String?
+  type           String?
+  deleted_at     DateTime?
+  created_at     DateTime?
+  updated_at     DateTime?
+  video_anime    video_anime[]
+  genrables      genrables[]    @relation("AnimeGenres")
+  anime_genres   anime_genres[]
 }
 
-model anime {
-  id            String    @id @default(uuid())
-  original_name String?
-  japanese_name String?
-  english_name  String?
-  date          DateTime?
-  videos        video[]   @relation("anime_videos")
-
-  @@map("anime")
+model artists {
+  id          Int           @id
+  name        String
+  created_at  DateTime?
+  updated_at  DateTime?
+  artistables artistables[]
 }
 
-model artist {
-  id     String  @id @default(uuid())
-  name   String
-  videos video[] @relation("artist_videos")
+model videos {
+  id          Int           @id
+  user_id     Int?
+  ytid        String
+  title       String
+  is_featured Boolean?
+  type        String?
+  number      Int?
+  status      String?
+  view_count  Int?
+  deleted_at  DateTime?
+  created_at  DateTime?
+  updated_at  DateTime?
+  video_anime video_anime[]
+  artistables artistables[]
+  genrables   genrables[]   @relation("VideoGenres")
 
-  @@map("artist")
+  artistablesArtist_id       Int?
+  artistablesArtistable_id   Int?
+  artistablesArtistable_type String?
+  video_genres               video_genres[]
 }
 
-model video {
-  id          String   @id @default(uuid())
-  youtube_id  String
-  anime_id    String
-  artist_id   String
-  titre       String
-  type        String
-  type_number Int?
-  status      String
-  created_at  DateTime @default(now())
+model artistables {
+  artist_id       Int
+  artistable_id   Int
+  artistable_type String
+  artists         artists @relation(fields: [artist_id], references: [id])
+  videos          videos? @relation(fields: [artistable_id], references: [id])
 
-  anime  anime  @relation("anime_videos", fields: [anime_id], references: [id])
-  artist artist @relation("artist_videos", fields: [artist_id], references: [id])
+  @@id([artist_id, artistable_id, artistable_type])
+}
 
-  @@map("video")
+model video_anime {
+  video_id Int
+  anime_id Int
+  videos   videos @relation(fields: [video_id], references: [id])
+  animes   animes @relation(fields: [anime_id], references: [id])
+
+  @@id([video_id, anime_id])
+}
+
+model genres {
+  id           Int            @id
+  name         String
+  type         String?
+  created_at   DateTime?
+  updated_at   DateTime?
+  genrables    genrables[]
+  anime_genres anime_genres[]
+  video_genres video_genres[]
+}
+
+model genrables {
+  genre_id      Int
+  genrable_id   Int
+  genrable_type String
+  genres        genres  @relation(fields: [genre_id], references: [id])
+  animes        animes? @relation("AnimeGenres", fields: [genrable_id], references: [id], map: "genrables_anime_id_fkey")
+  videos        videos? @relation("VideoGenres", fields: [genrable_id], references: [id], map: "genrables_video_id_fkey")
+
+  @@id([genre_id, genrable_id, genrable_type])
+}
+
+model anime_genres {
+  genre_id Int
+  anime_id Int
+  genres   genres @relation(fields: [genre_id], references: [id])
+  animes   animes @relation(fields: [anime_id], references: [id])
+
+  @@id([genre_id, anime_id])
+}
+
+model video_genres {
+  genre_id Int
+  video_id Int
+  genres   genres @relation(fields: [genre_id], references: [id])
+  videos   videos @relation(fields: [video_id], references: [id])
+
+  @@id([genre_id, video_id])
 }

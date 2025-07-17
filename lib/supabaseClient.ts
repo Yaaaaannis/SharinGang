@@ -8,8 +8,25 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Fonction utilitaire pour fetch toutes les vidéos enrichies
 export async function fetchVideosWithAnimeAndArtist() {
   const { data, error } = await supabase
-    .from('video')
-    .select(`*, anime(*), artist(*)`)
+    .from('videos')
+    .select(`
+      *,
+      artistables:artistables (
+        artists:artists (
+          name
+        )
+      ),
+      video_anime (
+        animes (
+          title_fr
+        )
+      ),
+      genrables (
+        genres (
+          name
+        )
+      )
+    `)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;

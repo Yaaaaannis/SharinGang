@@ -37,6 +37,10 @@ export const YoutubeBackground = forwardRef<YTPlayer | null, YoutubeBackgroundPr
 
     // Quand videoId change, charge la nouvelle vidéo si le player existe déjà
     useEffect(() => {
+      if (!videoId || videoId.length !== 11) {
+        console.error("Invalid YouTube video ID:", videoId);
+        return;
+      }
       if (playerRef.current && typeof playerRef.current.loadVideoById === 'function') {
         playerRef.current.loadVideoById(videoId);
       }

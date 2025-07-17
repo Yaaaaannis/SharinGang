@@ -9,7 +9,7 @@ import { TrackInfo } from './TrackInfo';
 import { LoaderOverlay } from './LoaderOverlay';
 import { TransitionOverlay } from './TransitionOverlay';
 import { useCurrentTrack } from "./CurrentTrackContext";
-import { NowPlayingSection } from '../search/NowPlayingSection';
+
 
 export type YTPlayer = {
   playVideo: () => void;
@@ -82,25 +82,46 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
   const [dots, setDots] = useState('');
   const [hasTriggeredNext, setHasTriggeredNext] = useState(false);
   const { setTrack } = useCurrentTrack();
+  const stuckAtEndCount = useRef(0);
 
   // Surveille le temps restant et passe à la suivante 5 secondes avant la fin
   useEffect(() => {
-    if (!player || isLoading) return;
+    if (!player || isLoading) {
+      console.log('[AutoNext] Pas de player ou isLoading', { player, isLoading });
+      return;
+    }
 
     const interval = setInterval(() => {
       // @ts-expect-error: getDuration n'est pas typé dans YTPlayer mais existe sur l'instance réelle
       const duration = player.getDuration?.();
       // @ts-expect-error: getCurrentTime n'est pas typé dans YTPlayer mais existe sur l'instance réelle
       const currentTime = player.getCurrentTime?.();
-
+      console.log('[AutoNext] Tick', { duration, currentTime, hasTriggeredNext });
       if (
         duration &&
         currentTime !== undefined &&
         duration - currentTime <= 5 &&
         !hasTriggeredNext
       ) {
+        console.log('[AutoNext] Passage à la suivante');
         setHasTriggeredNext(true);
         handleNext();
+      }
+      // Sécurité : si bloqué à la fin trop longtemps, on force le next
+      if (
+        duration &&
+        currentTime !== undefined &&
+        Math.abs(duration - currentTime) < 0.1 // tolérance flottante
+      ) {
+        stuckAtEndCount.current += 1;
+        if (stuckAtEndCount.current > 5) {
+          console.log('[AutoNext] Sécurité : vidéo bloquée à la fin, on force le next');
+          setHasTriggeredNext(true);
+          handleNext();
+          stuckAtEndCount.current = 0;
+        }
+      } else {
+        stuckAtEndCount.current = 0;
       }
     }, 500);
 
@@ -109,11 +130,14 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
 
   // Remet à zéro le flag à chaque nouvelle vidéo
   useEffect(() => {
+    console.log('[AutoNext] Reset hasTriggeredNext pour index', currentVideoIndex);
     setHasTriggeredNext(false);
+    stuckAtEndCount.current = 0;
   }, [currentVideoIndex]);
 
   // Surveille le temps restant et passe à la suivante 5 secondes avant la fin
   useEffect(() => {
+    console.log('[Track] Clip joué :', currentVideo);
     setTrack({
       title: currentVideo.titre || currentVideo.title || '',
       anime: currentVideo.Anime?.original_name || currentVideo.anime || '',
@@ -125,17 +149,27 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
 
   // YoutubeBackground callbacks
   const handleReady = (event: PlayerEvent) => {
+    console.log('[YT] handleReady', event);
     event.target.setPlaybackQuality('hd1080');
     setPlayer(event.target);
   };
   const handleStateChange = (event: PlayerEvent) => {
+    console.log('[YT] handleStateChange', event.data);
     if (event.data === 0) {
+      console.log('[YT] handleStateChange: Fin de vidéo, passage à la suivante (mécanisme natif, fonctionne même onglet inactif)');
       handleNext();
+    }
+    // Optionnel : logs pour d'autres états
+    if (event.data === -1) {
+      console.log('[YT] handleStateChange: Unstarted');
+    }
+    if (event.data === 3) {
+      console.log('[YT] handleStateChange: Buffering');
     }
   };
 
-  
   const handleStart = () => {
+    console.log('[YT] handleStart');
     if (player) {
       player.playVideo();
       setIsLoading(false);
@@ -156,6 +190,7 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
   };
 
   const handleNext = () => {
+    console.log('[YT] handleNext called');
     if (player && !isTransitioning) {
       setIsTransitioning(true);
       setTimeout(() => {
@@ -195,7 +230,8 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
     }
   };
 
-
+  // Ajout du log avant le render JSX
+  console.log('[Render] isLoading:', isLoading, 'currentVideoIndex:', currentVideoIndex);
 
   return (
     <div className="relative min-h-screen">
@@ -232,28 +268,23 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
       </div>
       <div className="relative z-10 min-h-screen flex items-center justify-center">
         <TrackInfo
-        
           title={currentVideo.titre || currentVideo.title || ''}
           anime={currentVideo.Anime?.original_name || currentVideo.anime || ''}
           artist={currentVideo.Artist?.name || currentVideo.artist || ''}
           opening={currentVideo.opening || (currentVideo.type === 'opening' && currentVideo.type_number ? `Opening ${currentVideo.type_number}` : currentVideo.type || '')}
-        />
-      </div>
-      {/* NowPlayingSection en bas à gauche */}
-      {!isLoading && (
-        <NowPlayingSection
-          current={currentVideo}
-          all={videos}
-          onSelect={(clip) => {
-            const idx = videos.findIndex(v => v.id === clip.id);
-            if (idx !== -1 && idx !== currentVideoIndex) {
-              setCurrentVideoIndex(idx);
-              player?.loadVideoById(clip.id);
+          allClips={videos}
+          currentClip={currentVideo}
+          onSelectClip={clip => {
+            if (player) {
+              setCurrentVideoIndex(videos.findIndex(v => v.id === clip.id));
+              player.loadVideoById(clip.id);
               setIsPlaying(true);
             }
           }}
         />
-      )}
+      </div>
+      {/* NowPlayingSidebar en bas à gauche */}
+     
     </div>
   );
 } 
