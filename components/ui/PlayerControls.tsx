@@ -8,7 +8,7 @@ interface PlayerControlsProps {
 
 export function PlayerControls({ isPlaying, isTransitioning, onPlayPause, onNext, onPrev }: PlayerControlsProps) {
   return (
-    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8">
+    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8">
       {/* Previous */}
       <button
         onClick={onPrev}

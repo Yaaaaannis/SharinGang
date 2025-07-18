@@ -15,6 +15,23 @@ export const YoutubeBackground = forwardRef<YTPlayer | null, YoutubeBackgroundPr
 
     useImperativeHandle(ref, () => playerRef.current as YTPlayer);
 
+    // Wrapper pour intercepter les events d'état
+    const handleStateChange = (event: PlayerEvent) => {
+      // Codes d'état d'erreur potentiels :
+      // -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
+      // Codes d'erreur (voir doc YouTube) : 2, 5, 100, 101, 150
+      if (event.data === -1 || event.data === 0 || event.data === 2 || event.data === 5) {
+        // Pas une erreur, ne rien faire de spécial
+      }
+      // Si le player expose un getPlayerState ou getError, on peut aussi l'utiliser ici
+      // Mais on log tout event potentiellement problématique
+      if (event.data === 100 || event.data === 101 || event.data === 150) {
+        console.error("YouTube video unavailable event:", event);
+      }
+      // Toujours forward l'event à la prop d'origine
+      onStateChange(event);
+    };
+
     // Crée le player une seule fois
     useEffect(() => {
       const tag = document.createElement('script');
@@ -28,7 +45,7 @@ export const YoutubeBackground = forwardRef<YTPlayer | null, YoutubeBackgroundPr
           playerVars: options,
           events: {
             onReady,
-            onStateChange,
+            onStateChange: handleStateChange,
           },
         });
       };

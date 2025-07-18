@@ -83,6 +83,10 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
   const [hasTriggeredNext, setHasTriggeredNext] = useState(false);
   const { setTrack } = useCurrentTrack();
   const stuckAtEndCount = useRef(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Timeout pour skip si jamais Playing
+  const skipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasPlayedRef = useRef(false);
 
   // Surveille le temps restant et passe à la suivante 5 secondes avant la fin
   useEffect(() => {
@@ -96,7 +100,6 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
       const duration = player.getDuration?.();
       // @ts-expect-error: getCurrentTime n'est pas typé dans YTPlayer mais existe sur l'instance réelle
       const currentTime = player.getCurrentTime?.();
-      console.log('[AutoNext] Tick', { duration, currentTime, hasTriggeredNext });
       if (
         duration &&
         currentTime !== undefined &&
@@ -147,6 +150,26 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentVideoIndex]);
 
+  // Timeout pour skip si jamais Playing
+  useEffect(() => {
+    hasPlayedRef.current = false;
+    if (skipTimeoutRef.current) {
+      clearTimeout(skipTimeoutRef.current);
+    }
+    skipTimeoutRef.current = setTimeout(() => {
+      if (!hasPlayedRef.current) {
+        console.warn('[YT] Timeout: vidéo jamais passée à Playing, on skip');
+        handleNext(true);
+      }
+    }, 3000);
+    return () => {
+      if (skipTimeoutRef.current) {
+        clearTimeout(skipTimeoutRef.current);
+        skipTimeoutRef.current = null;
+      }
+    };
+  }, [currentVideoIndex]);
+
   // YoutubeBackground callbacks
   const handleReady = (event: PlayerEvent) => {
     console.log('[YT] handleReady', event);
@@ -155,6 +178,14 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
   };
   const handleStateChange = (event: PlayerEvent) => {
     console.log('[YT] handleStateChange', event.data);
+    // Si Playing, on annule le timeout
+    if (event.data === 1) {
+      hasPlayedRef.current = true;
+      if (skipTimeoutRef.current) {
+        clearTimeout(skipTimeoutRef.current);
+        skipTimeoutRef.current = null;
+      }
+    }
     if (event.data === 0) {
       console.log('[YT] handleStateChange: Fin de vidéo, passage à la suivante (mécanisme natif, fonctionne même onglet inactif)');
       handleNext();
@@ -189,9 +220,9 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
     }
   };
 
-  const handleNext = () => {
-    console.log('[YT] handleNext called');
-    if (player && !isTransitioning) {
+  const handleNext = (force = false) => {
+    console.log('[YT] handleNext called', { force });
+    if (player && (!isTransitioning || force)) {
       setIsTransitioning(true);
       setTimeout(() => {
         player.stopVideo();
@@ -252,20 +283,18 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
       />
       {isLoading && <LoaderOverlay onStart={handleStart} />}
       {!isLoading && (
-        <PlayerControls
-          isPlaying={isPlaying}
-          isTransitioning={isTransitioning}
-          onPlayPause={handlePlayPause}
-          onNext={handleNext}
-          onPrev={handlePrev}
-        />
+        <div
+          className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8 transition-all duration-500 ${sidebarOpen ? 'blur-md' : ''} ${isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        >
+          <PlayerControls
+            isPlaying={isPlaying}
+            isTransitioning={isTransitioning}
+            onPlayPause={handlePlayPause}
+            onNext={handleNext}
+            onPrev={handlePrev}
+          />
+        </div>
       )}
-      <div
-        onMouseEnter={() => setIsVolumeControlVisible(true)}
-        onMouseLeave={() => setIsVolumeControlVisible(false)}
-      >
-      
-      </div>
       <div className="relative z-10 min-h-screen flex items-center justify-center">
         <TrackInfo
           title={currentVideo.titre || currentVideo.title || ''}
@@ -281,6 +310,8 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
               setIsPlaying(true);
             }
           }}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
         />
       </div>
       {/* NowPlayingSidebar en bas à gauche */}

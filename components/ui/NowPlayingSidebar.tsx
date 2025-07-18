@@ -55,7 +55,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
       {/* Overlay pour fermer la sidebar au clic en dehors */}
       {open && (
         <div
-          className="fixed inset-0 z-[1999] bg-black/30 backdrop-blur-sm"
+          className="fixed inset-0 z-[1999] bg-black/30 backdrop-blur-md"
           onClick={onClose}
           aria-label="Fermer le menu"
         />
