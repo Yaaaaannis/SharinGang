@@ -88,6 +88,7 @@ export default function RootLayout({
         <meta name="msapplication-config" content="/browserconfig.xml" />
         <meta name="msapplication-TileColor" content="#f00611" />
         <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="google-site-verification" content="IbcRLbhGwyQoLXwknn1ryhLQ21CQg7DkEfmzpRdqh7c" />
       </head>
       <body className={inter.className}>
         <ClientProviders>
