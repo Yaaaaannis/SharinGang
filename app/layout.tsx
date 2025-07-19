@@ -9,7 +9,7 @@ import { DynamicTitle } from '@/components/ui/DynamicTitle'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sharingang.com'),
+  metadataBase: new URL('https://sharin-gang.vercel.app'),
   title: {
     default: 'SharinGang - Radio Anime Openings & Endings',
     template: '%s | SharinGang'
@@ -36,13 +36,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    url: 'https://sharingang.com',
+    url: 'https://sharin-gang.vercel.app',
     siteName: 'SharinGang',
     title: 'SharinGang - Radio Anime Openings & Endings',
     description: 'Écoutez en streaming les meilleures openings et endings d\'anime japonais. Radio gratuite avec une sélection unique de musiques d\'anime.',
     images: [
       {
-        url: '/og-image.jpg',
+        url: 'https://sharin-gang.vercel.app/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'SharinGang - Radio Anime',
@@ -55,10 +55,10 @@ export const metadata: Metadata = {
     creator: '@sharingang',
     title: 'SharinGang - Radio Anime Openings & Endings',
     description: 'Écoutez en streaming les meilleures openings et endings d\'anime japonais.',
-    images: ['/og-image.jpg'],
+    images: ['https://sharin-gang.vercel.app/og-image.jpg'],
   },
   alternates: {
-    canonical: 'https://sharingang.com',
+    canonical: 'https://sharin-gang.vercel.app',
   },
   category: 'music',
   classification: 'Radio streaming anime',
