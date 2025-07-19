@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Clip } from './YoutubeRadioPlayer';
+import gsap from 'gsap';
 
 interface NowPlayingSidebarProps {
   open: boolean;
@@ -14,6 +15,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
   const [animate, setAnimate] = useState(false);
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
   const [openingFilter, setOpeningFilter] = useState<string>('');
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -49,6 +51,40 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
 
   // Pour alterner l'inclinaison des pancartes
   const getRotation = (idx: number) => (idx % 2 === 0 ? '-3deg' : '3deg');
+
+  // Effet de bounce au hover - rotation comme une pancarte qui prend le vent
+  const handleCardHover = (idx: number) => {
+    const card = cardRefs.current[idx];
+    if (card) {
+      gsap.killTweensOf(card);
+      const baseRotation = idx % 2 === 0 ? -3 : 3;
+      gsap.to(card, {
+        rotation: baseRotation + (idx % 2 === 0 ? -3 : 3),
+        duration: 0.15,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(card, {
+            rotation: baseRotation,
+            duration: 0.2,
+            ease: "elastic.out(1, 0.4)"
+          });
+        }
+      });
+    }
+  };
+
+  const handleCardLeave = (idx: number) => {
+    const card = cardRefs.current[idx];
+    if (card) {
+      gsap.killTweensOf(card);
+      const baseRotation = idx % 2 === 0 ? -3 : 3;
+      gsap.to(card, {
+        rotation: baseRotation,
+        duration: 0.1,
+        ease: "power2.out"
+      });
+    }
+  };
 
   return (
     <>
@@ -142,15 +178,18 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
                   <div className="absolute left-1/2 -translate-x-1/2 -top-6 w-1 h-6 bg-black z-0" style={{borderRadius:'2px'}} />
                   {/* Pancarte */}
                   <div
+                    ref={el => { cardRefs.current[idx] = el; }}
                     className={`relative w-[90%] min-h-[70px] max-h-[120px] px-5 py-4 border-4 border-black rounded-2xl shadow-xl cursor-pointer transition-all duration-200 flex flex-row items-center select-none ${isCurrent || isClicked ? 'bg-[#f00611] text-white scale-105' : 'bg-[#f5ecd7] text-black hover:bg-[#f00611]/90 hover:text-white hover:scale-102'} `}
                     style={{
                       fontFamily:'KOMIKAX_, sans-serif',
                       letterSpacing:1,
-                      transform: `rotate(${getRotation(idx)}) ${isClicked ? 'scale(1.12) translateY(-6px)' : ''}`,
+                      transform: `${isClicked ? 'scale(1.12) translateY(-6px)' : ''}`,
                       boxShadow: isCurrent || isClicked ? '0 0 0 4px #f00611' : undefined,
                       transition: 'all 0.25s cubic-bezier(.68,-0.55,.27,1.55)',
                       overflow: 'hidden',
                     }}
+                    onMouseEnter={() => handleCardHover(idx)}
+                    onMouseLeave={() => handleCardLeave(idx)}
                     onClick={() => {
                       setClickedIdx(idx);
                       setTimeout(() => {
