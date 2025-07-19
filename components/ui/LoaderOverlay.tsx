@@ -9,37 +9,24 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // Animation d'entrée pour le titre
+    // Animation d'entrée simple
     gsap.fromTo('.loader-title', 
-      { opacity: 0, y: -50, scale: 0.8 },
-      { opacity: 1, y: 0, scale: 1, duration: 1, ease: 'elastic.out(1, 0.6)' }
+      { opacity: 0, y: -20 },
+      { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }
     );
 
-    // Animation d'entrée pour le bouton
     gsap.fromTo('.loader-button', 
-      { opacity: 0, y: 30, scale: 0.9 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.8, delay: 0.3, ease: 'power2.out' }
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.6, delay: 0.2, ease: 'power2.out' }
     );
   }, []);
 
   const handleButtonHover = () => {
     setIsHovered(true);
-    gsap.to('.loader-button', {
-      scale: 1.05,
-      rotation: 2,
-      duration: 0.2,
-      ease: 'power2.out'
-    });
   };
 
   const handleButtonLeave = () => {
     setIsHovered(false);
-    gsap.to('.loader-button', {
-      scale: 1,
-      rotation: 0,
-      duration: 0.2,
-      ease: 'power2.out'
-    });
   };
 
   return (
@@ -81,7 +68,7 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
           <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-1 h-6 bg-black rounded-full" />
           
           <button
-            className="loader-button relative px-12 py-6 bg-[#f5ecd7] border-4 border-black rounded-2xl shadow-xl font-lazer84 text-2xl uppercase text-black transition-all duration-200 hover:bg-[#f00611] hover:text-white"
+            className="loader-button relative px-12 py-6 bg-[#f5ecd7] border-4 border-black rounded-2xl shadow-xl font-lazer84 text-2xl uppercase text-black transition-all duration-200 hover:bg-[#f00611] hover:text-white cursor-pointer"
             style={{
               letterSpacing: '0.1em',
               textShadow: isHovered ? '2px 2px 0 #000' : '1px 1px 0 #f00611',

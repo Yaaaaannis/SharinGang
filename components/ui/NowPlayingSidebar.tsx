@@ -15,6 +15,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
   const [animate, setAnimate] = useState(false);
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
   const [openingFilter, setOpeningFilter] = useState<string>('');
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
     } else {
       setAnimate(false);
       setClickedIdx(null);
+      setHoveredIdx(null);
       setOpeningFilter('');
     }
   }, [open]);
@@ -54,6 +56,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
 
   // Effet de bounce au hover - rotation comme une pancarte qui prend le vent
   const handleCardHover = (idx: number) => {
+    setHoveredIdx(idx);
     const card = cardRefs.current[idx];
     if (card) {
       gsap.killTweensOf(card);
@@ -74,6 +77,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
   };
 
   const handleCardLeave = (idx: number) => {
+    setHoveredIdx(null);
     const card = cardRefs.current[idx];
     if (card) {
       gsap.killTweensOf(card);
@@ -172,6 +176,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
             filtered.map((clip, idx) => {
               const isCurrent = clip.id === current.id;
               const isClicked = clickedIdx === idx;
+              const isHovered = hoveredIdx === idx;
               return (
                 <div key={clip.id + '-' + idx} className="relative w-full flex flex-col items-end">
                   {/* Corde/trait */}
@@ -200,7 +205,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
                   >
                     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                       <span className="text-lg font-extrabold uppercase truncate w-full block" title={clip.title}>{clip.title}</span>
-                      <span className="text-base font-bold truncate w-full block" style={{fontFamily:'Lazer84, sans-serif', color: isCurrent || isClicked ? '#fff' : '#f00611'}}>{clip.artist}</span>
+                      <span className="text-base font-bold truncate w-full block" style={{fontFamily:'Lazer84, sans-serif', color: isCurrent || isClicked || isHovered ? '#fff' : '#f00611'}}>{clip.artist}</span>
                       <span className="text-xs italic truncate w-full block">{clip.anime}</span>
                     </div>
                     {/* Opening vertical à droite, toujours à l'intérieur */}
@@ -211,12 +216,12 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
                           writingMode: 'vertical-rl',
                           textOrientation: 'mixed',
                           fontFamily: 'Lazer84, sans-serif',
-                          color: isCurrent || isClicked ? '#fff' : '#f00611',
+                          color: isCurrent || isClicked || isHovered ? '#fff' : '#f00611',
                           letterSpacing: 2,
                           textTransform: 'uppercase',
                           minHeight: '48px',
                           lineHeight: 1.1,
-                          filter: isCurrent || isClicked ? 'drop-shadow(0 0 2px #f00611)' : 'drop-shadow(0 0 2px #fff)',
+                          filter: isCurrent || isClicked || isHovered ? 'drop-shadow(0 0 2px #f00611)' : 'drop-shadow(0 0 2px #fff)',
                           background: 'inherit',
                           display: 'flex',
                           alignItems: 'center',
