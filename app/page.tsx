@@ -1,5 +1,6 @@
 import { YoutubeRadioPlayer } from "@/components/ui/YoutubeRadioPlayer";
 import { fetchVideosWithAnimeAndArtist } from "@/lib/supabaseClient";
+import { Metadata } from 'next';
 
 interface SupabaseVideo {
   ytid: string;
@@ -10,6 +11,40 @@ interface SupabaseVideo {
   video_anime?: { animes?: { title_fr: string } | null }[] | null;
   genrables?: { genres?: { name: string } | null }[] | null;
 }
+
+export const metadata: Metadata = {
+  title: 'SharinGang - Radio Anime Openings & Endings',
+  description: 'Écoutez en streaming les meilleures openings et endings d\'anime japonais. Radio gratuite avec une sélection unique de musiques d\'anime.',
+  keywords: 'anime, openings, endings, musique japonaise, streaming, radio, j-pop, j-rock, ost anime',
+  authors: [{ name: 'SharinGang' }],
+  creator: 'SharinGang',
+  publisher: 'SharinGang',
+  robots: 'index, follow',
+  openGraph: {
+    title: 'SharinGang - Radio Anime Openings & Endings',
+    description: 'Écoutez en streaming les meilleures openings et endings d\'anime japonais. Radio gratuite avec une sélection unique de musiques d\'anime.',
+    type: 'website',
+    locale: 'fr_FR',
+    siteName: 'SharinGang',
+    images: [
+      {
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'SharinGang - Radio Anime',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SharinGang - Radio Anime Openings & Endings',
+    description: 'Écoutez en streaming les meilleures openings et endings d\'anime japonais.',
+    images: ['/og-image.jpg'],
+  },
+  alternates: {
+    canonical: 'https://sharingang.com',
+  },
+};
 
 export default async function Home() {
   const videosRaw = await fetchVideosWithAnimeAndArtist();
@@ -42,5 +77,10 @@ export default async function Home() {
           ? `Opening ${v.type_number}`
           : v.type,
     }));
-  return <YoutubeRadioPlayer videos={videos} />;
+
+  return (
+    <main>
+      <YoutubeRadioPlayer videos={videos} />
+    </main>
+  );
 }

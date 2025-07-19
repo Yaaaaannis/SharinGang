@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://sharingang.com/sitemap.xml
+
+# Crawl-delay pour éviter de surcharger le serveur
+Crawl-delay: 1
+
+# Bloquer l'accès aux fichiers sensibles
+Disallow: /api/
+Disallow: /_next/
+Disallow: /lib/
+Disallow: /components/
+Disallow: /prisma/
+
+# Permettre l'accès aux ressources publiques
+Allow: /public/
+Allow: /favicon.ico
+Allow: /og-image.jpg
+Allow: /*.jpg
+Allow: /*.png
+Allow: /*.svg
+Allow: /*.gif
+Allow: /*.ttf
+Allow: /*.woff
+Allow: /*.woff2 

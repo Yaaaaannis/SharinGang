@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Clip } from './YoutubeRadioPlayer';
 import gsap from 'gsap';
 
@@ -10,13 +10,137 @@ interface NowPlayingSidebarProps {
   onSelect: (clip: Clip) => void;
 }
 
-export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: NowPlayingSidebarProps) {
+// Composant de carte optimisé avec React.memo
+const ClipCard = React.memo(({ 
+  clip, 
+  idx, 
+  isCurrent, 
+  isClicked, 
+  isHovered, 
+  onCardHover, 
+  onCardLeave, 
+  onClick,
+  cardRef 
+}: {
+  clip: Clip;
+  idx: number;
+  isCurrent: boolean;
+  isClicked: boolean;
+  isHovered: boolean;
+  onCardHover: (idx: number) => void;
+  onCardLeave: (idx: number) => void;
+  onClick: (clip: Clip, idx: number) => void;
+  cardRef: (el: HTMLDivElement | null) => void;
+}) => {
+  const handleClick = useCallback(() => {
+    onClick(clip, idx);
+  }, [clip, idx, onClick]);
+
+  const handleMouseEnter = useCallback(() => {
+    onCardHover(idx);
+  }, [idx, onCardHover]);
+
+  const handleMouseLeave = useCallback(() => {
+    onCardLeave(idx);
+  }, [idx, onCardLeave]);
+
+  return (
+    <div className="relative w-full flex flex-col items-end">
+      {/* Corde/trait */}
+      <div className="absolute left-1/2 -translate-x-1/2 -top-6 w-1 h-6 bg-black z-0" style={{borderRadius:'2px'}} />
+      {/* Pancarte */}
+      <div
+        ref={cardRef}
+        className={`relative w-[90%] min-h-[70px] max-h-[120px] px-5 py-4 border-4 border-black rounded-2xl shadow-xl cursor-pointer transition-all duration-200 flex flex-row items-center select-none ${isCurrent || isClicked ? 'bg-[#f00611] text-white scale-105' : 'bg-[#f5ecd7] text-black hover:bg-[#f00611]/90 hover:text-white hover:scale-102'} `}
+        style={{
+          fontFamily:'KOMIKAX_, sans-serif',
+          letterSpacing:1,
+          transform: `${isClicked ? 'scale(1.12) translateY(-6px)' : ''}`,
+          boxShadow: isCurrent || isClicked ? '0 0 0 4px #f00611' : undefined,
+          transition: 'all 0.25s cubic-bezier(.68,-0.55,.27,1.55)',
+          overflow: 'hidden',
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+      >
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          <span className="text-lg font-extrabold uppercase truncate w-full block" title={clip.title}>{clip.title}</span>
+          <span className="text-base font-bold truncate w-full block" style={{fontFamily:'Lazer84, sans-serif', color: isCurrent || isClicked || isHovered ? '#fff' : '#f00611'}}>{clip.artist}</span>
+          <span className="text-xs italic truncate w-full block">{clip.anime}</span>
+        </div>
+        {/* Opening vertical à droite, toujours à l'intérieur */}
+        {clip.opening && (
+          <span
+            className="text-xs font-bold ml-3 select-none shrink-0 max-w-[24px] min-w-[16px] overflow-hidden"
+            style={{
+              writingMode: 'vertical-rl',
+              textOrientation: 'mixed',
+              fontFamily: 'Lazer84, sans-serif',
+              color: isCurrent || isClicked || isHovered ? '#fff' : '#f00611',
+              letterSpacing: 2,
+              textTransform: 'uppercase',
+              minHeight: '48px',
+              lineHeight: 1.1,
+              filter: isCurrent || isClicked || isHovered ? 'drop-shadow(0 0 2px #f00611)' : 'drop-shadow(0 0 2px #fff)',
+              background: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              maxHeight: '80px',
+              boxSizing: 'border-box',
+              transition: 'none',
+            }}
+          >
+            {clip.opening}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+});
+
+ClipCard.displayName = 'ClipCard';
+
+// Composant de filtre optimisé
+const FilterButton = React.memo(({ 
+  type, 
+  isActive, 
+  onClick 
+}: {
+  type: string;
+  isActive: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    className={`px-3 py-1 rounded-full border-2 border-black font-bold text-xs uppercase tracking-widest transition-all shadow ${isActive ? 'bg-[#f00611] text-white scale-105' : 'bg-[#f5ecd7] text-black hover:bg-[#f00611]/90 hover:text-white'}`}
+    style={{fontFamily:'KOMIKAX_, sans-serif'}}
+    onClick={onClick}
+  >
+    {type}
+  </button>
+));
+
+FilterButton.displayName = 'FilterButton';
+
+export const NowPlayingSidebar = React.memo(({ open, onClose, current, all, onSelect }: NowPlayingSidebarProps) => {
   const [search, setSearch] = useState('');
   const [animate, setAnimate] = useState(false);
   const [clickedIdx, setClickedIdx] = useState<number | null>(null);
   const [openingFilter, setOpeningFilter] = useState<string>('');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Optimisation: debounce pour la recherche
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     if (open) {
@@ -26,10 +150,12 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
       setClickedIdx(null);
       setHoveredIdx(null);
       setOpeningFilter('');
+      setSearch('');
+      setDebouncedSearch('');
     }
   }, [open]);
 
-  // Liste des types d'opening uniques (hors vide)
+  // Liste des types d'opening uniques (hors vide) - optimisé avec useMemo
   const openingTypes = useMemo(() => {
     const set = new Set<string>();
     all.forEach(clip => {
@@ -38,24 +164,23 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
     return Array.from(set).sort();
   }, [all]);
 
-  // Filtrage par search et opening
-  const filtered = all.filter(clip => {
-    const matchesOpening = !openingFilter || clip.opening === openingFilter;
-    const q = search.trim().toLowerCase();
-    const matchesSearch =
-      !q ||
-      clip.title.toLowerCase().includes(q) ||
-      clip.artist.toLowerCase().includes(q) ||
-      clip.anime.toLowerCase().includes(q) ||
-      (clip.opening && clip.opening.toLowerCase().includes(q));
-    return matchesOpening && matchesSearch;
-  });
+  // Filtrage par search et opening - optimisé avec useMemo
+  const filtered = useMemo(() => {
+    return all.filter(clip => {
+      const matchesOpening = !openingFilter || clip.opening === openingFilter;
+      const q = debouncedSearch.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        clip.title.toLowerCase().includes(q) ||
+        clip.artist.toLowerCase().includes(q) ||
+        clip.anime.toLowerCase().includes(q) ||
+        (clip.opening && clip.opening.toLowerCase().includes(q));
+      return matchesOpening && matchesSearch;
+    });
+  }, [all, openingFilter, debouncedSearch]);
 
-  // Pour alterner l'inclinaison des pancartes
-  const getRotation = (idx: number) => (idx % 2 === 0 ? '-3deg' : '3deg');
-
-  // Effet de bounce au hover - rotation comme une pancarte qui prend le vent
-  const handleCardHover = (idx: number) => {
+  // Optimisation: callbacks mémorisés
+  const handleCardHover = useCallback((idx: number) => {
     setHoveredIdx(idx);
     const card = cardRefs.current[idx];
     if (card) {
@@ -74,9 +199,9 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
         }
       });
     }
-  };
+  }, []);
 
-  const handleCardLeave = (idx: number) => {
+  const handleCardLeave = useCallback((idx: number) => {
     setHoveredIdx(null);
     const card = cardRefs.current[idx];
     if (card) {
@@ -88,26 +213,46 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
         ease: "power2.out"
       });
     }
-  };
+  }, []);
+
+  const handleCardClick = useCallback((clip: Clip, idx: number) => {
+    setClickedIdx(idx);
+    setTimeout(() => {
+      setClickedIdx(null);
+      onSelect(clip);
+    }, 250);
+  }, [onSelect]);
+
+  const handleFilterClick = useCallback((type: string) => {
+    setOpeningFilter(type);
+  }, []);
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
+
+  // Optimisation: ref callback pour éviter les re-créations
+  const setCardRef = useCallback((idx: number) => (el: HTMLDivElement | null) => {
+    cardRefs.current[idx] = el;
+  }, []);
+
+  // Si la sidebar n'est pas ouverte, ne pas rendre le contenu
+  if (!open) {
+    return null;
+  }
 
   return (
     <>
       {/* Overlay pour fermer la sidebar au clic en dehors */}
-      {open && (
-        <div
-          className="fixed inset-0 z-[1999] bg-black/30 backdrop-blur-md"
-          onClick={onClose}
-          aria-label="Fermer le menu"
-        />
-      )}
       <div
-        className={`fixed top-0 right-0 h-full w-[340px] z-[2000] flex flex-col items-end transition-transform duration-700 ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        className="fixed inset-0 z-[1999] bg-black/30 backdrop-blur-md"
+        onClick={onClose}
+        aria-label="Fermer le menu"
+      />
+      <div
+        className={`fixed top-0 right-0 h-full w-[340px] z-[2000] flex flex-col items-end transition-transform duration-700 pointer-events-auto`}
         style={{
-          transform: open
-            ? animate
-              ? 'translateY(0)'
-              : 'translateY(-100%)'
-            : 'translateY(-100%)',
+          transform: animate ? 'translateY(0)' : 'translateY(-100%)',
           transition: 'transform 0.7s cubic-bezier(.77,0,.18,1)',
         }}
         onClick={e => e.stopPropagation()} // Empêche la propagation du clic à l'overlay
@@ -137,22 +282,18 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
         {/* Filtres opening */}
         {openingTypes.length > 0 && (
           <div className="w-full flex flex-row items-center justify-center gap-2 mt-2 mb-2 px-3 flex-wrap">
-            <button
-              className={`px-3 py-1 rounded-full border-2 border-black font-bold text-xs uppercase tracking-widest transition-all shadow ${!openingFilter ? 'bg-[#f00611] text-white scale-105' : 'bg-[#f5ecd7] text-black hover:bg-[#f00611]/90 hover:text-white'}`}
-              style={{fontFamily:'KOMIKAX_, sans-serif'}}
-              onClick={() => setOpeningFilter('')}
-            >
-              Tous
-            </button>
+            <FilterButton
+              type="Tous"
+              isActive={!openingFilter}
+              onClick={() => handleFilterClick('')}
+            />
             {openingTypes.map(type => (
-              <button
+              <FilterButton
                 key={type}
-                className={`px-3 py-1 rounded-full border-2 border-black font-bold text-xs uppercase tracking-widest transition-all shadow ${openingFilter === type ? 'bg-[#f00611] text-white scale-105' : 'bg-[#f5ecd7] text-black hover:bg-[#f00611]/90 hover:text-white'}`}
-                style={{fontFamily:'KOMIKAX_, sans-serif'}}
-                onClick={() => setOpeningFilter(type)}
-              >
-                {type}
-              </button>
+                type={type}
+                isActive={openingFilter === type}
+                onClick={() => handleFilterClick(type)}
+              />
             ))}
           </div>
         )}
@@ -163,7 +304,7 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
             <input
               type="text"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={handleSearchChange}
               placeholder="Rechercher..."
               className="flex-1 bg-transparent outline-none text-black text-lg uppercase font-bold tracking-widest placeholder-black/40"
               style={{fontFamily:'KOMIKAX_, sans-serif'}}
@@ -177,65 +318,20 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
               const isCurrent = clip.id === current.id;
               const isClicked = clickedIdx === idx;
               const isHovered = hoveredIdx === idx;
+              
               return (
-                <div key={clip.id + '-' + idx} className="relative w-full flex flex-col items-end">
-                  {/* Corde/trait */}
-                  <div className="absolute left-1/2 -translate-x-1/2 -top-6 w-1 h-6 bg-black z-0" style={{borderRadius:'2px'}} />
-                  {/* Pancarte */}
-                  <div
-                    ref={el => { cardRefs.current[idx] = el; }}
-                    className={`relative w-[90%] min-h-[70px] max-h-[120px] px-5 py-4 border-4 border-black rounded-2xl shadow-xl cursor-pointer transition-all duration-200 flex flex-row items-center select-none ${isCurrent || isClicked ? 'bg-[#f00611] text-white scale-105' : 'bg-[#f5ecd7] text-black hover:bg-[#f00611]/90 hover:text-white hover:scale-102'} `}
-                    style={{
-                      fontFamily:'KOMIKAX_, sans-serif',
-                      letterSpacing:1,
-                      transform: `${isClicked ? 'scale(1.12) translateY(-6px)' : ''}`,
-                      boxShadow: isCurrent || isClicked ? '0 0 0 4px #f00611' : undefined,
-                      transition: 'all 0.25s cubic-bezier(.68,-0.55,.27,1.55)',
-                      overflow: 'hidden',
-                    }}
-                    onMouseEnter={() => handleCardHover(idx)}
-                    onMouseLeave={() => handleCardLeave(idx)}
-                    onClick={() => {
-                      setClickedIdx(idx);
-                      setTimeout(() => {
-                        setClickedIdx(null);
-                        onSelect(clip);
-                      }, 250);
-                    }}
-                  >
-                    <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                      <span className="text-lg font-extrabold uppercase truncate w-full block" title={clip.title}>{clip.title}</span>
-                      <span className="text-base font-bold truncate w-full block" style={{fontFamily:'Lazer84, sans-serif', color: isCurrent || isClicked || isHovered ? '#fff' : '#f00611'}}>{clip.artist}</span>
-                      <span className="text-xs italic truncate w-full block">{clip.anime}</span>
-                    </div>
-                    {/* Opening vertical à droite, toujours à l'intérieur */}
-                    {clip.opening && (
-                      <span
-                        className="text-xs font-bold ml-3 select-none shrink-0 max-w-[24px] min-w-[16px] overflow-hidden"
-                        style={{
-                          writingMode: 'vertical-rl',
-                          textOrientation: 'mixed',
-                          fontFamily: 'Lazer84, sans-serif',
-                          color: isCurrent || isClicked || isHovered ? '#fff' : '#f00611',
-                          letterSpacing: 2,
-                          textTransform: 'uppercase',
-                          minHeight: '48px',
-                          lineHeight: 1.1,
-                          filter: isCurrent || isClicked || isHovered ? 'drop-shadow(0 0 2px #f00611)' : 'drop-shadow(0 0 2px #fff)',
-                          background: 'inherit',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          maxHeight: '80px',
-                          boxSizing: 'border-box',
-                          transition: 'none',
-                        }}
-                      >
-                        {clip.opening}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <ClipCard
+                  key={clip.id + '-' + idx}
+                  clip={clip}
+                  idx={idx}
+                  isCurrent={isCurrent}
+                  isClicked={isClicked}
+                  isHovered={isHovered}
+                  onCardHover={handleCardHover}
+                  onCardLeave={handleCardLeave}
+                  onClick={handleCardClick}
+                  cardRef={setCardRef(idx)}
+                />
               );
             })
           ) : null}
@@ -247,4 +343,6 @@ export function NowPlayingSidebar({ open, onClose, current, all, onSelect }: Now
       </div>
     </>
   );
-} 
+});
+
+NowPlayingSidebar.displayName = 'NowPlayingSidebar'; 

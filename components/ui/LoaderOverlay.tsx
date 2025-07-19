@@ -30,7 +30,13 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm">
+    <div 
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loader-title"
+      aria-describedby="loader-description"
+    >
       {/* Fond avec texture */}
       <div 
         className="absolute inset-0 opacity-20"
@@ -40,6 +46,7 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
           backgroundPosition: 'center',
           filter: 'contrast(1.2) brightness(0.8)'
         }}
+        aria-hidden="true"
       />
       
       {/* Contenu principal */}
@@ -48,24 +55,37 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
         <div className="relative mb-12">
           {/* Pancarte de fond */}
           <div className="bg-[#f5ecd7] border-4 border-black rounded-2xl px-8 py-6 shadow-2xl" style={{transform: 'rotate(-1deg)'}}>
-            <div className="loader-title text-6xl font-komikax uppercase text-center">
+            <div 
+              id="loader-title"
+              className="loader-title text-6xl font-komikax uppercase text-center"
+              role="heading"
+              aria-level={1}
+            >
               <span className="text-black drop-shadow-[2px_2px_0_#f00611]">Sharin</span>
               <span className="text-[#f00611] drop-shadow-[2px_2px_0_#000]">Gang</span>
             </div>
           </div>
           
           {/* Corde suspendue */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-8 bg-black rounded-full" />
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-1 h-8 bg-black rounded-full" aria-hidden="true" />
           
           {/* Petites pancartes décoratives */}
-          <div className="absolute -top-16 -left-8 w-6 h-4 bg-[#f00611] border-2 border-black rounded rotate-12" />
-          <div className="absolute -top-12 -right-6 w-4 h-3 bg-[#f5ecd7] border-2 border-black rounded -rotate-6" />
+          <div className="absolute -top-16 -left-8 w-6 h-4 bg-[#f00611] border-2 border-black rounded rotate-12" aria-hidden="true" />
+          <div className="absolute -top-12 -right-6 w-4 h-3 bg-[#f5ecd7] border-2 border-black rounded -rotate-6" aria-hidden="true" />
+        </div>
+
+        {/* Description */}
+        <div 
+          id="loader-description"
+          className="sr-only"
+        >
+          Radio anime SharinGang - Écoutez les meilleures openings et endings d&apos;anime japonais
         </div>
 
         {/* Bouton de démarrage */}
         <div className="relative">
           {/* Corde du bouton */}
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-1 h-6 bg-black rounded-full" />
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-1 h-6 bg-black rounded-full" aria-hidden="true" />
           
           <button
             className="loader-button relative px-12 py-6 bg-[#f5ecd7] border-4 border-black rounded-2xl shadow-xl font-lazer84 text-2xl uppercase text-black transition-all duration-200 hover:bg-[#f00611] hover:text-white cursor-pointer"
@@ -78,19 +98,20 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
             onClick={onStart}
             onMouseEnter={handleButtonHover}
             onMouseLeave={handleButtonLeave}
+            aria-label="Commencer à écouter la radio anime"
           >
             Appuyez pour commencer
           </button>
         </div>
 
         {/* Éléments décoratifs */}
-        <div className="absolute top-1/2 -translate-y-1/2 -left-20 w-8 h-8 bg-[#f00611] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(15deg)'}} />
-        <div className="absolute top-1/3 -right-16 w-6 h-6 bg-[#f5ecd7] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(-10deg)'}} />
-        <div className="absolute bottom-1/3 -left-12 w-4 h-4 bg-[#f00611] border-2 border-black rounded-full opacity-40" style={{transform: 'rotate(25deg)'}} />
+        <div className="absolute top-1/2 -translate-y-1/2 -left-20 w-8 h-8 bg-[#f00611] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(15deg)'}} aria-hidden="true" />
+        <div className="absolute top-1/3 -right-16 w-6 h-6 bg-[#f5ecd7] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(-10deg)'}} aria-hidden="true" />
+        <div className="absolute bottom-1/3 -left-12 w-4 h-4 bg-[#f00611] border-2 border-black rounded-full opacity-40" style={{transform: 'rotate(25deg)'}} aria-hidden="true" />
       </div>
 
       {/* Animation de particules flottantes */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}

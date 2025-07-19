@@ -265,7 +265,11 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
   console.log('[Render] isLoading:', isLoading, 'currentVideoIndex:', currentVideoIndex);
 
   return (
-    <div className="relative min-h-screen">
+    <div 
+      className="relative min-h-screen"
+      role="application"
+      aria-label="Radio anime SharinGang - Lecteur de musiques d'anime"
+    >
       <TransitionOverlay isTransitioning={isTransitioning} />
       <YoutubeBackground
         videoId={currentVideo.id}
@@ -285,6 +289,8 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
       {!isLoading && (
         <div
           className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-8 transition-all duration-500 ${sidebarOpen ? 'blur-md' : ''} ${isTransitioning ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+          role="toolbar"
+          aria-label="Contrôles du lecteur"
         >
           <PlayerControls
             isPlaying={isPlaying}
@@ -295,7 +301,11 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
           />
         </div>
       )}
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
+      <div 
+        className="relative z-10 min-h-screen flex items-center justify-center"
+        role="main"
+        aria-label="Informations sur la piste en cours"
+      >
         <TrackInfo
           title={currentVideo.titre || currentVideo.title || ''}
           anime={currentVideo.Anime?.original_name || currentVideo.anime || ''}
