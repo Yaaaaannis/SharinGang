@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ClientProviders from './ClientProviders'
+import { DynamicTitle } from '@/components/ui/DynamicTitle'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -90,6 +91,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ClientProviders>
+          <DynamicTitle />
           {children}
         </ClientProviders>
       </body>
