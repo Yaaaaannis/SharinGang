@@ -83,7 +83,17 @@ export function TrackInfo({ title, anime, artist, opening, allClips, currentClip
     <>
       {/* Zone centrale invisible pour le survol */}
       <div
-        style={{position: 'fixed', top: '50%', left: '50%', width: 520, height: 200, transform: 'translate(-50%, -50%)', zIndex: 999, pointerEvents: 'auto', background: 'transparent'}}
+        className="fixed z-[999] pointer-events-auto bg-transparent"
+        style={{
+          top: '50%',
+          left: '50%',
+          width: '90vw',
+          maxWidth: 520,
+          height: '38vw',
+          maxHeight: 200,
+          minHeight: 120,
+          transform: 'translate(-50%, -50%)',
+        }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -95,10 +105,10 @@ export function TrackInfo({ title, anime, artist, opening, allClips, currentClip
             onClick={() => setSidebarOpen(true)}
           >
             <svg
-              width="500"
-              height="180"
+              width="100%"
+              height="100%"
               viewBox="0 0 500 180"
-              style={{ filter: "drop-shadow(10px 10px 0 #f00611) drop-shadow(0 4px 16px rgba(0,0,0,0.4))" }}
+              style={{ maxWidth: '500px', maxHeight: '180px', width: '100%', height: '100%', filter: "drop-shadow(10px 10px 0 #f00611) drop-shadow(0 4px 16px rgba(0,0,0,0.4))" }}
             >
               {/* Forme trapèze inclinée, fond blanc */}
               <polygon

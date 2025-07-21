@@ -54,10 +54,10 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
         {/* Titre principal avec style pancarte */}
         <div className="relative mb-12">
           {/* Pancarte de fond */}
-          <div className="bg-[#f5ecd7] border-4 border-black rounded-2xl px-8 py-6 shadow-2xl" style={{transform: 'rotate(-1deg)'}}>
+          <div className="bg-[#f5ecd7] border-4 border-black rounded-2xl px-4 py-4 sm:px-8 sm:py-6 shadow-2xl" style={{transform: 'rotate(-1deg)'}}>
             <div 
               id="loader-title"
-              className="loader-title text-6xl font-komikax uppercase text-center"
+              className="loader-title text-3xl sm:text-6xl font-komikax uppercase text-center"
               role="heading"
               aria-level={1}
             >
@@ -88,7 +88,7 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
           <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-1 h-6 bg-black rounded-full" aria-hidden="true" />
           
           <button
-            className="loader-button relative px-12 py-6 bg-[#f5ecd7] border-4 border-black rounded-2xl shadow-xl font-lazer84 text-2xl uppercase text-black transition-all duration-200 hover:bg-[#f00611] hover:text-white cursor-pointer"
+            className="loader-button relative px-6 py-4 sm:px-12 sm:py-6 bg-[#f5ecd7] border-4 border-black rounded-2xl shadow-xl font-lazer84 text-lg sm:text-2xl uppercase text-black transition-all duration-200 hover:bg-[#f00611] hover:text-white cursor-pointer"
             style={{
               letterSpacing: '0.1em',
               textShadow: isHovered ? '2px 2px 0 #000' : '1px 1px 0 #f00611',
@@ -105,9 +105,9 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
         </div>
 
         {/* Éléments décoratifs */}
-        <div className="absolute top-1/2 -translate-y-1/2 -left-20 w-8 h-8 bg-[#f00611] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(15deg)'}} aria-hidden="true" />
-        <div className="absolute top-1/3 -right-16 w-6 h-6 bg-[#f5ecd7] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(-10deg)'}} aria-hidden="true" />
-        <div className="absolute bottom-1/3 -left-12 w-4 h-4 bg-[#f00611] border-2 border-black rounded-full opacity-40" style={{transform: 'rotate(25deg)'}} aria-hidden="true" />
+        <div className="absolute top-1/2 -translate-y-1/2 -left-8 sm:-left-20 w-5 h-5 sm:w-8 sm:h-8 bg-[#f00611] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(15deg)'}} aria-hidden="true" />
+        <div className="absolute top-1/3 -right-6 sm:-right-16 w-3 h-3 sm:w-6 sm:h-6 bg-[#f5ecd7] border-2 border-black rounded-full opacity-60" style={{transform: 'rotate(-10deg)'}} aria-hidden="true" />
+        <div className="absolute bottom-1/3 -left-4 sm:-left-12 w-2 h-2 sm:w-4 sm:h-4 bg-[#f00611] border-2 border-black rounded-full opacity-40" style={{transform: 'rotate(25deg)'}} aria-hidden="true" />
       </div>
 
       {/* Animation de particules flottantes */}
@@ -115,7 +115,7 @@ export function LoaderOverlay({ onStart }: LoaderOverlayProps) {
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-2 h-2 bg-[#f00611] rounded-full opacity-30"
+            className="absolute w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#f00611] rounded-full opacity-30"
             style={{
               left: `${20 + i * 15}%`,
               top: `${30 + (i % 2) * 40}%`,
