@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import type { YTPlayer, PlayerEvent } from './YoutubeRadioPlayer';
 
 interface YoutubeBackgroundProps {
@@ -12,6 +12,28 @@ interface YoutubeBackgroundProps {
 export const YoutubeBackground = forwardRef<YTPlayer | null, YoutubeBackgroundProps>(
   ({ videoId, options, onReady, onStateChange }, ref) => {
     const playerRef = useRef<YTPlayer | null>(null);
+    const [isCoverMode, setIsCoverMode] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [hasUserToggled, setHasUserToggled] = useState(false);
+
+    // Détecter si on est sur mobile
+    useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth < 768); // md breakpoint
+      };
+      
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      
+      return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Ajuster le mode par défaut selon la taille d'écran (seulement si l'utilisateur n'a pas encore togglé)
+    useEffect(() => {
+      if (!hasUserToggled) {
+        setIsCoverMode(!isMobile); // cover sur desktop, contain sur mobile
+      }
+    }, [isMobile, hasUserToggled]);
 
     useImperativeHandle(ref, () => playerRef.current as YTPlayer);
 
@@ -64,15 +86,31 @@ export const YoutubeBackground = forwardRef<YTPlayer | null, YoutubeBackgroundPr
     }, [videoId]);
 
     return (
-      <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
-        <div className="relative w-[140%] h-[140%] -left-[20%] -top-[20%]">
-          <div id="youtube-player" className="absolute w-full h-full"></div>
+      <>
+        <div className="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+          <div className={`relative ${isCoverMode ? 'w-[140%] h-[140%] -left-[20%] -top-[20%]' : 'w-full h-full'}`}>
+            <div id="youtube-player" className={`absolute w-full h-full ${isCoverMode ? '' : 'object-contain'}`}></div>
+          </div>
+          {/* Overlay halftone */}
+          <div className="pointer-events-none fixed inset-0 w-full h-full z-10" style={{opacity:0.02}}>
+            <img src="/gif.gif" alt="halftone effect" className="w-full h-full object-cover" />
+          </div>
         </div>
-        {/* Overlay halftone */}
-        <div className="pointer-events-none fixed inset-0 w-full h-full z-10" style={{opacity:0.02}}>
-          <img src="/gif.gif" alt="halftone effect" className="w-full h-full object-cover" />
+        
+        {/* Toggle button - only visible on mobile */}
+        <div className="fixed bottom-4 right-4 z-50 pointer-events-auto md:hidden">
+          <button
+            onClick={() => {
+              console.log('Toggle button clicked - switching from', isCoverMode ? 'cover' : 'contain', 'to', !isCoverMode ? 'cover' : 'contain');
+              setIsCoverMode(!isCoverMode);
+              setHasUserToggled(true);
+            }}
+            className="bg-black/20 backdrop-blur-sm text-white px-3 py-2 rounded-full text-sm font-medium hover:bg-black/30 transition-colors"
+          >
+            {isCoverMode ? 'Contain' : 'Cover'}
+          </button>
         </div>
-      </div>
+      </>
     );
   }
 ); 
