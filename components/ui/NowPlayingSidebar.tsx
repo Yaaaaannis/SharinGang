@@ -295,6 +295,15 @@ export const NowPlayingSidebar = React.memo(({ open, onClose, current, all, onSe
                 onClick={() => handleFilterClick(type)}
               />
             ))}
+            <a
+              href="https://tally.so/r/3q198d"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1 rounded-full border-2 border-black font-bold text-xs uppercase tracking-widest transition-all shadow bg-[#f5ecd7] text-black hover:bg-[#f00611] hover:text-white"
+              style={{fontFamily:'KOMIKAX_, sans-serif'}}
+            >
+              Proposer
+            </a>
           </div>
         )}
         {/* Recherche façon pancarte */}
@@ -311,6 +320,7 @@ export const NowPlayingSidebar = React.memo(({ open, onClose, current, all, onSe
             />
           </div>
         </div>
+        
         {/* Liste verticale façon pancartes suspendues */}
         <div className="flex-1 w-full flex flex-col gap-6 items-end pr-4 overflow-y-auto pb-8 relative">
           {filtered.length > 0 ? (
