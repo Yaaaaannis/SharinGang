@@ -274,7 +274,7 @@ export function YoutubeRadioPlayer({ videos }: YoutubeRadioPlayerProps) {
       <YoutubeBackground
         videoId={currentVideo.id}
         options={{
-          autoplay: 1,
+          autoplay: isLoading ? 0 : 1,
           controls: 0,
           showinfo: 0,
           rel: 0,
